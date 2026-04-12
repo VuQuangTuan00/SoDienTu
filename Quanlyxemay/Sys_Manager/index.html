@@ -1,0 +1,1523 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sổ Kỹ Thuật - Lữ Đoàn 279</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src='https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js'></script>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+    <script>
+      // Firebase Init — phải chạy trước mọi firebase.auth() bên dưới
+      const firebaseConfig = {
+        apiKey: "AIzaSyB0mukFbPbekKJi_lREOJ-arWcBT_4mGXQ",
+        authDomain: "motorcycle-management-sy-f6090.firebaseapp.com",
+        projectId: "motorcycle-management-sy-f6090",
+        storageBucket: "motorcycle-management-sy-f6090.appspot.com",
+        messagingSenderId: "128142378243",
+        appId: "1:128142378243:web:80b4b99f9f85cb11c55536",
+      };
+      if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+      }
+    </script>
+
+    <style>
+        /* --- CSS STYLES --- */
+        * {
+            box-sizing: border-box;
+        }
+
+        :root {
+            --military-green: #2e5e4e;
+            --military-dark: #1b3a31;
+            --accent-gold: #ffca28;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f6f8;
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            width: 280px;
+            background: linear-gradient(180deg, var(--military-green) 0%, var(--military-dark) 100%);
+            color: white;
+            padding: 20px;
+            box-shadow: 4px 0 15px rgba(0, 0, 0, 0.3);
+            position: fixed;
+            height: 100%;
+            border-right: 4px solid var(--accent-gold);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .unit-brand {
+            text-align: center;
+            margin-bottom: 25px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            padding-bottom: 15px;
+        }
+
+        .logo-container {
+            width: 100px;
+            height: 100px;
+            margin: 0 auto 10px auto;
+            border-radius: 50%;
+            border: 3px solid var(--accent-gold);
+            background-color: #fff;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .unit-logo {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .unit-name {
+            font-size: 1.1em;
+            font-weight: bold;
+            text-transform: uppercase;
+            color: var(--accent-gold);
+            letter-spacing: 1px;
+            margin: 5px 0;
+        }
+
+        .unit-slogan {
+            font-size: 0.8em;
+            font-style: italic;
+            color: #dcedc8;
+        }
+
+        .sidebar-menu {
+            flex-grow: 1;
+            overflow-y: auto;
+        }
+
+        .menu-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 15px;
+            color: #ecf0f1;
+            text-decoration: none;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            transition: all 0.3s;
+            cursor: pointer;
+            border: 1px solid transparent;
+        }
+
+        .menu-item:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-left: 4px solid var(--accent-gold);
+        }
+
+        .menu-item.active {
+            background-color: var(--accent-gold);
+            color: var(--military-dark);
+            font-weight: bold;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .sidebar-footer {
+            flex-shrink: 0;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .settings-btn {
+            background-color: rgba(0, 0, 0, 0.2);
+            color: #ecf0f1;
+            font-weight: 600;
+        }
+
+        /* MAIN CONTENT */
+        .main {
+            margin-left: 280px;
+            padding: 30px;
+            flex-grow: 1;
+            width: calc(100% - 280px);
+            position: relative;
+            z-index: 1;
+        }
+
+        .background-overlay {
+            position: fixed;
+            top: 0;
+            left: 280px;
+            width: calc(100% - 280px);
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+            background-image: url('https://upload.wikimedia.org/wikipedia/commons/thumb/a/a1/Vietnam_People%27s_Army_Engineering_Branch_Insignia.png/600px-Vietnam_People%27s_Army_Engineering_Branch_Insignia.png');
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: 400px;
+            opacity: 0.08;
+            filter: grayscale(100%);
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding: 15px 25px;
+            background-color: rgba(255, 255, 255, 0.95);
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            border-left: 5px solid var(--military-green);
+        }
+
+        .header h2 {
+            margin: 0;
+            color: var(--military-dark);
+            text-transform: uppercase;
+            font-size: 1.3em;
+        }
+
+        /* Cards */
+        .stats-cards {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            flex: 1;
+            min-width: 200px;
+            text-align: center;
+            transition: transform 0.3s;
+            border-bottom: 3px solid transparent;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card h4 {
+            margin: 10px 0 0;
+            color: #7f8c8d;
+            font-size: 0.9em;
+            text-transform: uppercase;
+        }
+
+        .card p {
+            font-size: 2.5em;
+            margin: 5px 0 0;
+            font-weight: 700;
+        }
+
+        .card-icon {
+            font-size: 2.2em;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .card-parked {
+            border-bottom-color: #2ecc71;
+        }
+
+        .card-parked p {
+            color: #2ecc71;
+        }
+
+        .card-operating {
+            border-bottom-color: #3498db;
+        }
+
+        .card-operating p {
+            color: #3498db;
+        }
+
+        .card-maintenance {
+            border-bottom-color: #e74c3c;
+        }
+
+        .card-maintenance p {
+            color: #e74c3c;
+        }
+
+        /* Buttons & Tables */
+        .btn {
+            padding: 10px 18px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-transform: uppercase;
+            font-size: 0.9em;
+        }
+
+        .btn-primary {
+            background-color: var(--military-green);
+            color: white;
+        }
+
+        .btn-success {
+            background-color: #27ae60;
+            color: white;
+        }
+
+        .btn-danger {
+            background-color: #c0392b;
+            color: white;
+        }
+
+        .btn-dark {
+            background-color: #34495e;
+            color: white;
+        }
+
+        .btn-excel {
+            background-color: #217346;
+            color: white;
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 0.85em;
+            text-transform: none;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            margin-top: 15px;
+            border: 1px solid #e0e0e0;
+            background: rgba(255, 255, 255, 0.95);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 600px;
+        }
+
+        th,
+        td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        th {
+            background-color: #f1f3f4;
+            color: #444;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.85em;
+        }
+
+        .badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            color: white;
+            font-size: 0.75em;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .bg-ok {
+            background-color: #27ae60;
+        }
+
+        .bg-running {
+            background-color: #2980b9;
+        }
+
+        .bg-warn {
+            background-color: #f39c12;
+        }
+
+        .bg-err {
+            background-color: #c0392b;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(2px);
+        }
+
+        .modal-content {
+            background-color: #fff;
+            margin: 4% auto;
+            padding: 0;
+            width: 90%;
+            max-width: 500px;
+            border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            animation: slideDown 0.3s;
+        }
+
+        @keyframes slideDown {
+            from {
+                top: -30px;
+                opacity: 0;
+            }
+
+            to {
+                top: 0;
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            padding: 15px 20px;
+            background-color: var(--military-green);
+            color: white;
+            border-radius: 8px 8px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .modal-footer {
+            padding: 15px 20px;
+            border-top: 1px solid #eee;
+            text-align: right;
+            background: #f8f9fa;
+            border-radius: 0 0 8px 8px;
+        }
+
+        .close {
+            font-size: 24px;
+            cursor: pointer;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .close:hover {
+            color: white;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            color: #555;
+            font-size: 0.9em;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 1em;
+        }
+
+        .toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .toolbar h3 {
+            margin: 0;
+            color: var(--military-green);
+            font-size: 1.2em;
+        }
+
+        /* Camera UI */
+        #cameraSection {
+            margin-bottom: 15px;
+            border: 2px dashed var(--military-green);
+            padding: 10px;
+            border-radius: 6px;
+            text-align: center;
+            background: #e8f5e9;
+        }
+
+        #videoFeed {
+            max-width: 100%;
+            border-radius: 4px;
+            background: #000;
+            display: none;
+            margin: 0 auto;
+        }
+
+        /* QR Image Viewer */
+        #qrImageViewer {
+            width: 100%;
+            max-height: 300px;
+            object-fit: contain;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+
+        /* Mobile */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+                border-right: none;
+                display: block;
+            }
+
+            .main {
+                margin-left: 0;
+                width: 100%;
+                padding: 15px;
+            }
+
+            .background-overlay {
+                left: 0;
+                width: 100%;
+            }
+
+            .header {
+                flex-direction: column;
+                gap: 10px;
+                text-align: center;
+                border-left: none;
+                border-top: 5px solid var(--military-green);
+            }
+
+            .stats-cards {
+                flex-direction: column;
+            }
+
+            table,
+            thead,
+            tbody,
+            th,
+            td,
+            tr {
+                display: block;
+            }
+
+            thead tr {
+                position: absolute;
+                top: -9999px;
+                left: -9999px;
+            }
+
+            tr {
+                border: 1px solid #ccc;
+                margin-bottom: 15px;
+                border-radius: 6px;
+                padding: 10px;
+                background: white;
+            }
+
+            td {
+                border: none;
+                position: relative;
+                padding-left: 50%;
+                text-align: right;
+                margin-bottom: 5px;
+                border-bottom: 1px dotted #eee;
+            }
+
+            td:last-child {
+                border-bottom: none;
+            }
+
+            td::before {
+                content: attr(data-label);
+                position: absolute;
+                left: 10px;
+                font-weight: bold;
+                text-align: left;
+                color: #666;
+            }
+        }
+    </style>
+</head>
+
+<body onload="initApp()">
+
+    <div class="background-overlay" id="bgOverlay"></div>
+
+    <div class="sidebar">
+        <div class="unit-brand">
+            <div class="logo-container">
+                <img id="unitLogoImg"
+                    src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a1/Vietnam_People%27s_Army_Engineering_Branch_Insignia.png/600px-Vietnam_People%27s_Army_Engineering_Branch_Insignia.png"
+                    alt="Logo Don Vi" class="unit-logo">
+            </div>
+            <div class="unit-name">KHU KỸ THUẬT-LỮ ĐOÀN 279</div>
+            <div class="unit-slogan">"Yêu xe như con, quý xăng như máu"</div>
+        </div>
+
+        <div class="sidebar-header">
+            <small style="color:#bbb; text-transform:uppercase; font-size:0.75em; letter-spacing:1px;">Trực ban kỹ
+                thuật:</small>
+            <div style="display:flex; align-items:center; justify-content:center; gap:5px; margin-top:5px;">
+                <strong id="dutyNameDisplay" style="color:var(--accent-gold); font-size:1.1em;">...</strong>
+                <i class="fas fa-edit" style="cursor:pointer; opacity:0.7;" onclick="openModal('modalDuty')"
+                    title="Đổi tên"></i>
+            </div>
+        </div>
+        <hr style="border-color: rgba(255,255,255,0.1); width: 80%; margin: 15px auto;">
+
+        <div class="sidebar-menu">
+            <div id="link-dashboard" class="menu-item active" onclick="showPage('dashboard')">
+                <i class="fas fa-th-large"></i> <span>Bảng Điều Khiển</span>
+            </div>
+            <div id="link-logbook" class="menu-item" onclick="showPage('logbook')">
+                <i class="fas fa-book"></i> <span>Sổ Nhật Ký Xe</span>
+            </div>
+            <div id="link-stats" class="menu-item" onclick="showPage('stats')">
+                <i class="fas fa-chart-bar"></i> <span>Báo Cáo Thống Kê</span>
+            </div>
+            <div id="link-vehicles" class="menu-item" onclick="showPage('vehicles')">
+                <i class="fas fa-truck-moving"></i> <span>Hồ Sơ Phương Tiện</span>
+            </div>
+            <div id="link-data" class="menu-item" onclick="openModal('modalData')">
+                <i class="fas fa-database"></i> <span>Quản Lý Dữ Liệu</span>
+            </div>
+        </div>
+
+        <div class="sidebar-footer">
+            <div class="menu-item settings-btn" onclick="openModal('modalSettings')">
+                <i class="fas fa-cogs"></i> <span>Cài Đặt Hệ Thống</span>
+            </div>
+            <div style="text-align: center; font-size: 0.7em; color: rgba(255,255,255,0.3); margin-top: 10px;">
+                Ver 2.3 - Quân Khu KT
+            </div>
+        </div>
+    </div>
+
+    <div class="main">
+        <div class="header">
+            <h2 id="page-title"><i class="fas fa-home"></i> Bảng Điều Khiển</h2>
+            <button class="btn btn-primary" onclick="prepareLogModal('OUT')">
+                <i class="fas fa-pen-square"></i> <span>Ghi Xe Ra Cổng</span>
+            </button>
+        </div>
+
+        <div id="page-dashboard">
+            <div class="stats-cards">
+                <div class="card card-parked">
+                    <span class="card-icon">🏁</span>
+                    <h4>Xe Sẵn Sàng</h4>
+                    <p id="statInPark">0</p>
+                </div>
+                <div class="card card-operating">
+                    <span class="card-icon">🛣️</span>
+                    <h4>Đang Làm Nhiệm Vụ</h4>
+                    <p id="statOperating">0</p>
+                </div>
+                <div class="card card-maintenance">
+                    <span class="card-icon">🔧</span>
+                    <h4>Bảo Dưỡng / Hỏng</h4>
+                    <p id="statMaintenance">0</p>
+                </div>
+            </div>
+
+            <div class="toolbar">
+                <h3><i class="fas fa-satellite-dish"></i> <span>Giám Sát Xe Hoạt Động</span></h3>
+                <button class="btn btn-excel btn-sm" onclick="exportDashboardToExcel()">
+                    <i class="fas fa-file-export"></i> Xuất Excel
+                </button>
+            </div>
+
+            <div class="table-container">
+                <table id="tblActiveMissionsFull">
+                    <thead>
+                        <tr>
+                            <th data-label="Biển số">Biển số</th>
+                            <th data-label="Loại xe">Loại xe</th>
+                            <th data-label="Nhiệm vụ">Nhiệm vụ</th>
+                            <th data-label="Giờ Đi">Giờ Đi</th>
+                            <th data-label="Người Lái">Người Lái</th>
+                            <th data-label="Hành động" style="text-align: center;">Tác vụ</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tblActiveMissions"></tbody>
+                </table>
+            </div>
+            <p id="emptyMission"
+                style="text-align: center; color: #555; margin-top: 20px; display: none; font-style: italic;">Hiện tại
+                không có xe nào đang hoạt động bên ngoài.</p>
+        </div>
+
+        <div id="page-logbook" class="hidden">
+            <div class="toolbar">
+                <div style="display: flex; gap: 10px; flex-grow: 1;">
+                    <input type="text" id="searchLog" placeholder="🔍 Tìm biển số, nhiệm vụ..." onkeyup="renderLogs()"
+                        style="flex-grow: 1; min-width: 200px; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
+                    <button class="btn btn-dark" onclick="renderLogs()"><i class="fas fa-search"></i></button>
+                </div>
+                <button class="btn btn-excel" onclick="exportTableToExcel('tblLogsFull', 'So_Nhat_Ky_Ra_Vao')">
+                    <i class="fas fa-download"></i> Tải Về
+                </button>
+            </div>
+            <div class="table-container">
+                <table id="tblLogsFull">
+                    <thead>
+                        <tr>
+                            <th>Ngày</th>
+                            <th>Biển số</th>
+                            <th>Nhiệm vụ</th>
+                            <th>Giờ Ra / Km</th>
+                            <th>Giờ Về / Km</th>
+                            <th>Quãng đường</th>
+                            <th>Trạng thái</th>
+                            <th class="no-export" style="text-align: center;">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tblLogs"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="page-stats" class="hidden">
+            <div class="toolbar">
+                <div class="form-group" style="margin-bottom: 0;">
+                    <input type="date" id="dailyStatDate" onchange="renderDailyStats(this.value)">
+                </div>
+                <button class="btn btn-excel" onclick="exportTableToExcel('tblDailyStatsFull', 'Thong_Ke_Ngay')">
+                    <i class="fas fa-print"></i> In Báo Cáo
+                </button>
+            </div>
+
+            <div class="stats-cards">
+                <div class="card">
+                    <h4>Tổng Km (Ngày)</h4>
+                    <p id="grandTotalDistance" style="color: var(--military-green);">0.0</p>
+                </div>
+                <div class="card">
+                    <h4>Tổng Chuyến Xe</h4>
+                    <p id="totalTrips" style="color: #d35400;">0</p>
+                </div>
+            </div>
+
+            <h3><i class="fas fa-list-ul"></i> Chi Tiết Hoạt Động Của Xe</h3>
+            <div class="table-container">
+                <table id="tblDailyStatsFull">
+                    <thead>
+                        <tr>
+                            <th>Biển Số</th>
+                            <th>Loại Xe</th>
+                            <th>Đơn Vị</th>
+                            <th>Số Chuyến</th>
+                            <th>Tổng Km Đã Chạy</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tblDailyStats"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="page-vehicles" class="hidden">
+            <div class="toolbar">
+                <button class="btn btn-success" onclick="openModal('modalVehicle')">
+                    <i class="fas fa-plus"></i> Thêm Xe Mới
+                </button>
+                <button class="btn btn-excel" onclick="exportTableToExcel('tblVehiclesFull', 'Danh_Sach_Phuong_Tien')">
+                    <i class="fas fa-file-export"></i> Xuất Danh Sách
+                </button>
+            </div>
+            <div class="table-container">
+                <table id="tblVehiclesFull">
+                    <thead>
+                        <tr>
+                            <th class="no-export" style="width: 50px;">Ảnh</th>
+                            <th>Biển số</th>
+                            <th>Loại xe</th>
+                            <th>Đơn vị quản lý</th>
+                            <th>Trạng thái</th>
+                            <th class="no-export" style="text-align: center;">Mã QR</th>
+                            <th class="no-export" style="text-align: center;">Xóa</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tblVehicles"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="modalSettings" class="modal">
+        <div class="modal-content" style="max-width: 400px;">
+            <div class="modal-header">
+                <h3><i class="fas fa-wrench"></i> Cài Đặt Hệ Thống</h3>
+                <span class="close" onclick="closeModal('modalSettings')">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="settings-option">
+                    <p style="font-weight:bold; color: var(--military-green);">Thay đổi Ảnh Nền / Logo:</p>
+                    <div style="background:#f9f9f9; padding:10px; border:1px dashed #ccc; text-align:center;">
+                        <input type="file" id="bgInput" accept="image/*" style="width:100%; margin-bottom:10px;">
+                        <small style="color:#777; display:block;">Chọn ảnh Logo Lữ Đoàn 279 từ máy tính của bạn.</small>
+                    </div>
+                </div>
+                <hr style="margin: 15px 0; border-top:1px solid #eee;">
+
+                <div class="settings-option" style="margin-top: 15px;">
+                    <button class="btn btn-primary" onclick="saveSettingsData()"
+                        style="width: 100%; margin-bottom: 10px;">
+                        <i class="fas fa-save"></i> Lưu Cấu Hình
+                    </button>
+                    <button class="btn btn-danger" onclick="exitApp()" style="width: 100%;  margin-bottom: 10px;">
+                        <i class="fas fa-power-off"></i> Thoát Ứng Dụng
+                    </button>
+                    <button class="btn btn-danger" onclick="logout()" style="width: 100%;">
+                        <i class="fas fa-sign-out-alt"></i> Đăng Xuất Tài Khoản
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modalLog" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="logModalTitle">Ghi Nhận Xe Ra</h3>
+                <span class="close" onclick="closeModal('modalLog')">&times;</span>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="inpLogId">
+                <input type="hidden" id="inpLogActionType">
+
+                <div id="cameraSection">
+                    <p style="margin: 0 0 10px 0; color: var(--military-green); font-weight: bold;">
+                        <i class="fas fa-video"></i> AI Camera Scan
+                    </p>
+                    <video id="videoFeed" width="100%" height="200" autoplay playsinline></video>
+                    <canvas id="canvasCapture" style="display: none;"></canvas>
+
+                    <div style="margin-top: 10px;">
+                        <button id="btnStartCam" class="btn btn-dark btn-sm" onclick="startCamera()">
+                            <i class="fas fa-camera"></i> Bật Camera
+                        </button>
+                        <button id="btnScanPlate" class="btn btn-danger btn-sm hidden" onclick="captureAndScan()">
+                            <i class="fas fa-crosshairs"></i> Quét Biển Số
+                        </button>
+                        <p id="scanStatus"
+                            style="font-size: 0.9em; color: #e67e22; margin-top: 5px; font-style: italic;"></p>
+                    </div>
+                </div>
+
+                <div class="form-group" id="groupSelectVehicle">
+                    <label>Chọn Xe:</label>
+                    <select id="inpLogPlate" required>
+                        <option value="">-- Danh sách xe --</option>
+                    </select>
+                </div>
+                <div class="form-group hidden" id="groupDisplayPlate">
+                    <label>Xe đang về:</label>
+                    <input type="text" id="displayPlate" readonly
+                        style="background: #f0f0f0; font-weight: bold; color: var(--military-green);">
+                </div>
+                <div class="form-group">
+                    <label>Người lái xe:</label>
+                    <input type="text" id="inpLogDriver" placeholder="Nhập tên lái xe">
+                </div>
+                <div class="form-group">
+                    <label>Nhiệm vụ / Tuyến đường:</label>
+                    <input type="text" id="inpLogTask" placeholder="VD: Công tác kho K1, Đi diễn tập...">
+                </div>
+
+                <div id="sectionOut">
+                    <div style="display: flex; gap: 15px;">
+                        <div class="form-group" style="flex: 1;">
+                            <label>Giờ Ra:</label>
+                            <input type="time" id="inpLogTimeOut">
+                        </div>
+                        <div class="form-group" style="flex: 1;">
+                            <label>Odo (Km) Đi:</label>
+                            <input type="number" step="0.1" id="inpLogOdoOut" placeholder="Số Km">
+                        </div>
+                    </div>
+                </div>
+
+                <div id="sectionIn" class="hidden"
+                    style="border-top: 2px dashed #ddd; padding-top: 15px; margin-top: 15px;">
+                    <div style="display: flex; gap: 15px;">
+                        <div class="form-group" style="flex: 1;">
+                            <label>Giờ Về:</label>
+                            <input type="time" id="inpLogTimeIn">
+                        </div>
+                        <div class="form-group" style="flex: 1;">
+                            <label>Odo (Km) Về:</label>
+                            <input type="number" step="0.1" id="inpLogOdoIn" placeholder="Số Km">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-dark" onclick="closeModal('modalLog')">Hủy Bỏ</button>
+                <button class="btn btn-primary" onclick="saveLog()">Lưu Sổ</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modalVehicle" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="vehModalTitle">Thêm Xe Mới</h3>
+                <span class="close" onclick="closeModal('modalVehicle')">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Biển số xe (VD: AA-12-34):</label>
+                    <input type="text" id="inpVehPlate" oninput="this.value = this.value.toUpperCase()">
+                </div>
+                <div class="form-group">
+                    <label>Chủng loại xe:</label>
+                    <input type="text" id="inpVehType" placeholder="VD: KAMAZ, ZIL-131, UAZ...">
+                </div>
+                <div class="form-group">
+                    <label>Đơn vị quản lý:</label>
+                    <input type="text" id="inpVehUnit" placeholder="VD: Đại đội 1, Ban Hậu Cần...">
+                </div>
+                <div class="form-group">
+                    <label>Trạng thái ban đầu:</label>
+                    <select id="inpVehStatus">
+                        <option value="Sẵn sàng">Sẵn sàng</option>
+                        <option value="Bảo dưỡng">Bảo dưỡng</option>
+                        <option value="Hỏng">Hỏng</option>
+                    </select>
+                </div>
+
+                <div class="form-group" style="background: #f0f8ff; padding: 10px; border: 1px dashed #ccc;">
+                    <label>Hình ảnh QR Code (Tự chọn):</label>
+                    <input type="file" id="inpVehQRImage" accept="image/*">
+                    <small style="color:#777;">Chọn ảnh QR Code có sẵn trên máy của bạn (nếu có).</small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-dark" onclick="closeModal('modalVehicle')">Hủy</button>
+                <button class="btn btn-success" onclick="saveVehicle()">Lưu Hồ Sơ</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modalViewQR" class="modal">
+        <div class="modal-content" style="max-width: 400px; text-align: center;">
+            <div class="modal-header">
+                <h3>Hình Ảnh Mã QR</h3>
+                <span class="close" onclick="closeModal('modalViewQR')">&times;</span>
+            </div>
+            <div class="modal-body">
+                <h2 id="viewQRTitle" style="color: var(--military-green); margin-bottom:10px;"></h2>
+                <img id="qrImageViewer" src="" alt="Chưa có ảnh QR" />
+                <p id="qrNoImageText" style="display:none; color:red; margin-top:10px;">Xe này chưa cập nhật ảnh QR.</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="modalDuty" class="modal">
+        <div class="modal-content" style="max-width: 400px;">
+            <div class="modal-header">
+                <h3>Trực Ban Kỹ Thuật</h3>
+                <span class="close" onclick="closeModal('modalDuty')">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Họ và Tên:</label>
+                    <input type="text" id="inpDutyName" placeholder="Nhập tên của bạn">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-success" onclick="saveDutyName()">Cập Nhật</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modalData" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Quản Lý Dữ Liệu</h3>
+                <span class="close" onclick="closeModal('modalData')">&times;</span>
+            </div>
+            <div class="modal-body">
+                <p>Sao lưu dữ liệu ra file Excel để lưu trữ:</p>
+                <button class="btn btn-primary" onclick="exportTableToExcel('tblLogsFull', 'Full_Backup_Logs')"
+                    style="width: 100%; margin-bottom: 15px;">
+                    <i class="fas fa-file-download"></i> Sao Lưu Sổ Nhật Ký
+                </button>
+                <hr>
+                <p style="font-size: 0.9em; color: #c0392b; font-weight: bold;">Vùng nguy hiểm:</p>
+                <button class="btn btn-danger" onclick="resetAllData()" style="width: 100%;">
+                    <i class="fas fa-trash-alt"></i> Xóa Toàn Bộ Dữ Liệu (Reset)
+                </button>
+            </div>
+        </div>
+    </div>
+    <script>
+        // --- KHỞI TẠO BIẾN TOÀN CỤC ---
+        let vehicles = JSON.parse(localStorage.getItem('db_vehicles')) || [];
+        let logs = JSON.parse(localStorage.getItem('db_logs')) || [];
+        let dutyOfficer = localStorage.getItem('duty_officer') || 'Đ/c Trực Ban';
+        let customBg = localStorage.getItem('custom_bg'); // Load ảnh nền đã lưu
+        let videoStream = null;
+
+        // --- UTILS ---
+        function getTodayString() { return new Date().toISOString().split('T')[0]; }
+        function getTimeString() { return new Date().toTimeString().split(' ')[0].substring(0, 5); }
+        function generateId() { return '_' + Math.random().toString(36).substr(2, 9); }
+
+        // --- EXPORT EXCEL ---
+        function exportTableToExcel(tableId, filename) {
+            let table = document.getElementById(tableId);
+            let clone = table.cloneNode(true);
+            let noExports = clone.querySelectorAll('.no-export');
+            noExports.forEach(el => el.remove());
+            let wb = XLSX.utils.table_to_book(clone, { sheet: "Sheet1" });
+            const buffer = XLSX.write(wb, {
+                bookType: 'xlsx',
+                type: 'buffer'
+            });
+
+            window.electronAPI.saveExcel(buffer);
+        }
+
+        function exportDashboardToExcel() {
+            let data = [
+                ["BÁO CÁO TÌNH TRẠNG XE - LỮ ĐOÀN 279"],
+                ["Ngày xuất:", getTodayString()],
+                ["Trực ban:", dutyOfficer],
+                [],
+                ["TỔNG HỢP"],
+                ["Sẵn sàng", document.getElementById('statInPark').innerText],
+                ["Đang nhiệm vụ", document.getElementById('statOperating').innerText],
+                ["Bảo dưỡng/Hỏng", document.getElementById('statMaintenance').innerText],
+                [],
+                ["CHI TIẾT XE ĐANG HOẠT ĐỘNG"],
+                ["Biển số", "Loại xe", "Nhiệm vụ", "Giờ Đi", "Người Lái"]
+            ];
+            let rows = document.querySelectorAll('#tblActiveMissions tr');
+            rows.forEach(r => {
+                let cols = r.querySelectorAll('td');
+                if (cols.length > 0) {
+                    data.push([cols[0].innerText, cols[1].innerText, cols[2].innerText, cols[3].innerText, cols[4].innerText]);
+                }
+            });
+            let wb = XLSX.utils.book_new();
+            let ws = XLSX.utils.aoa_to_sheet(data);
+            XLSX.utils.book_append_sheet(wb, ws, "Dashboard");
+            const buffer = XLSX.write(wb, {
+                bookType: 'xlsx',
+                type: 'buffer'
+            });
+
+            window.electronAPI.saveExcel(buffer);
+        }
+
+        // --- MAIN FUNCTIONS ---
+        function initApp() {
+            document.getElementById('dutyNameDisplay').innerText = dutyOfficer;
+            document.getElementById('dailyStatDate').value = getTodayString();
+            if (customBg) { applyBackground(customBg); }
+            refreshAll();
+        }
+
+        function refreshAll() {
+            localStorage.setItem('db_vehicles', JSON.stringify(vehicles));
+            localStorage.setItem('db_logs', JSON.stringify(logs));
+            localStorage.setItem('duty_officer', dutyOfficer);
+
+            renderVehicles();
+            renderLogs();
+            renderDashboard();
+            renderDailyStats(document.getElementById('dailyStatDate').value);
+        }
+
+        // --- SETTINGS & BG ---
+        function saveSettingsData() {
+            const fileInput = document.getElementById('bgInput');
+            if (fileInput.files && fileInput.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const bgData = e.target.result;
+                    localStorage.setItem('custom_bg', bgData);
+                    applyBackground(bgData);
+                    alert("Đã lưu ảnh nền mới thành công!");
+                    closeModal('modalSettings');
+                }
+                reader.readAsDataURL(fileInput.files[0]);
+            } else {
+                alert("Đã lưu cấu hình!");
+                closeModal('modalSettings');
+            }
+        }
+
+        function applyBackground(imgData) {
+            document.getElementById('unitLogoImg').src = imgData;
+            document.getElementById('bgOverlay').style.backgroundImage = `url('${imgData}')`;
+        }
+
+        // --- CAMERA AI LOGIC ---
+        function startCamera() {
+            const video = document.getElementById('videoFeed');
+            const btnStart = document.getElementById('btnStartCam');
+            const btnScan = document.getElementById('btnScanPlate');
+
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+                    .then(stream => {
+                        videoStream = stream;
+                        video.srcObject = stream;
+                        video.style.display = 'block';
+                        btnStart.classList.add('hidden');
+                        btnScan.classList.remove('hidden');
+                        document.getElementById('scanStatus').innerText = "Camera đã sẵn sàng...";
+                    })
+                    .catch(err => {
+                        alert("Lỗi camera: " + err);
+                    });
+            } else {
+                alert("Trình duyệt không hỗ trợ Camera hoặc kết nối không bảo mật (HTTPS).");
+            }
+        }
+
+        function stopCamera() {
+            if (videoStream) {
+                videoStream.getTracks().forEach(track => track.stop());
+                videoStream = null;
+            }
+            document.getElementById('videoFeed').style.display = 'none';
+            document.getElementById('btnStartCam').classList.remove('hidden');
+            document.getElementById('btnScanPlate').classList.add('hidden');
+            document.getElementById('scanStatus').innerText = "";
+        }
+
+        function captureAndScan() {
+            const video = document.getElementById('videoFeed');
+            const canvas = document.getElementById('canvasCapture');
+            const status = document.getElementById('scanStatus');
+
+            if (!videoStream) return;
+
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            status.innerText = "⏳ Đang phân tích biển số...";
+
+            if (typeof Tesseract === 'undefined') {
+                status.innerText = "❌ Lỗi: Thư viện AI chưa tải xong.";
+                return;
+            }
+
+            Tesseract.recognize(
+                canvas,
+                'eng',
+                { logger: m => console.log(m) }
+            ).then(({ data: { text } }) => {
+                processDetectedText(text);
+            }).catch(err => {
+                status.innerText = "❌ Lỗi nhận diện: " + err;
+            });
+        }
+
+        function processDetectedText(rawText) {
+            const status = document.getElementById('scanStatus');
+            let cleanText = rawText.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+
+            if (cleanText.length < 3) {
+                status.innerText = "⚠️ Không rõ biển số. Vui lòng thử lại!";
+                return;
+            }
+
+            let foundVehicle = vehicles.find(v => {
+                let cleanPlate = v.plate.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+                return cleanText.includes(cleanPlate);
+            });
+
+            if (foundVehicle) {
+                status.innerHTML = `✅ Đã nhận diện: <strong style="color:green">${foundVehicle.plate}</strong>`;
+                let selectBox = document.getElementById('inpLogPlate');
+                selectBox.value = foundVehicle.plate;
+                selectBox.style.backgroundColor = "#d4edda";
+                setTimeout(() => selectBox.style.backgroundColor = "white", 1500);
+            } else {
+                status.innerText = `❌ Không tìm thấy xe nào khớp với: ${cleanText}`;
+            }
+        }
+
+        // --- HIỂN THỊ ẢNH QR CODE CỦA XE ---
+        function viewQRImage(plate) {
+            let veh = vehicles.find(v => v.plate === plate);
+            document.getElementById('viewQRTitle').innerText = plate;
+
+            let imgViewer = document.getElementById('qrImageViewer');
+            let noImgText = document.getElementById('qrNoImageText');
+
+            if (veh && veh.qrImage) {
+                imgViewer.src = veh.qrImage;
+                imgViewer.style.display = 'block';
+                noImgText.style.display = 'none';
+            } else {
+                imgViewer.style.display = 'none';
+                noImgText.style.display = 'block';
+            }
+            openModal('modalViewQR');
+        }
+
+        // --- CORE LOGIC ---
+        function renderVehicles() {
+            const tbody = document.getElementById('tblVehicles');
+            tbody.innerHTML = '';
+            vehicles.forEach(v => {
+                let badgeClass = v.status === 'Đang đi' ? 'bg-running' : (v.status === 'Sẵn sàng' ? 'bg-ok' : 'bg-err');
+                let row = `<tr>
+                    <td class="no-export" data-label="Hình ảnh"><i class="fas fa-truck-monster fa-lg" style="color:#555"></i></td>
+                    <td data-label="Biển số"><strong>${v.plate}</strong></td>
+                    <td data-label="Loại xe">${v.type}</td>
+                    <td data-label="Đơn vị">${v.unit}</td>
+                    <td data-label="Trạng thái"><span class="badge ${badgeClass}">${v.status}</span></td>
+                    
+                    <td class="no-export" style="text-align: center;">
+                        <button class="btn btn-dark btn-sm" onclick="viewQRImage('${v.plate}')"><i class="fas fa-qrcode"></i> Xem Ảnh</button>
+                    </td>
+
+                    <td class="no-export" data-label="Hành động" style="text-align: center;">
+                        <button class="btn btn-danger btn-icon" onclick="deleteVehicle('${v.plate}')"><i class="fas fa-trash"></i></button>
+                    </td>
+                </tr>`;
+                tbody.innerHTML += row;
+            });
+            updateVehicleSelect();
+        }
+
+        function updateVehicleSelect() {
+            const sel = document.getElementById('inpLogPlate');
+            sel.innerHTML = '<option value="">-- Chọn xe từ danh sách --</option>';
+            vehicles.filter(v => v.status === 'Sẵn sàng').forEach(v => {
+                sel.innerHTML += `<option value="${v.plate}">${v.plate} - ${v.type}</option>`;
+            });
+        }
+
+        function renderLogs() {
+            const tbody = document.getElementById('tblLogs');
+            tbody.innerHTML = '';
+            const keyword = document.getElementById('searchLog').value.toLowerCase();
+            let sortedLogs = [...logs].sort((a, b) => new Date(b.date + ' ' + b.timeOut) - new Date(a.date + ' ' + a.timeOut));
+
+            sortedLogs.forEach(l => {
+                if ((l.plate && l.plate.toLowerCase().includes(keyword)) || (l.task && l.task.toLowerCase().includes(keyword))) {
+                    let statusHtml = l.timeIn ? '<span class="badge bg-ok">Đã về</span>' : '<span class="badge bg-running">Đang đi</span>';
+                    let distance = (l.odoIn && l.odoOut) ? (l.odoIn - l.odoOut).toFixed(1) : '...';
+
+                    let row = `<tr>
+                        <td data-label="Ngày">${l.date}</td>
+                        <td data-label="Biển số"><strong>${l.plate}</strong></td>
+                        <td data-label="Nhiệm vụ">${l.task}</td>
+                        <td data-label="Ra">${l.timeOut}<br><small>Odo: ${l.odoOut}</small></td>
+                        <td data-label="Về">${l.timeIn || '--'}<br><small>Odo: ${l.odoIn || '--'}</small></td>
+                        <td data-label="Quãng đường">${distance} Km</td>
+                        <td data-label="Trạng thái">${statusHtml}</td>
+                        <td class="no-export" style="text-align: center;">
+                            ${!l.timeIn ? `<button class="btn btn-primary btn-icon" onclick="prepareLogModal('IN', '${l.id}')"><i class="fas fa-check"></i> Báo Về</button>` : ''}
+                        </td>
+                    </tr>`;
+                    tbody.innerHTML += row;
+                }
+            });
+        }
+
+        function renderDashboard() {
+            const tbody = document.getElementById('tblActiveMissions');
+            tbody.innerHTML = '';
+            let activeLogs = logs.filter(l => !l.timeIn);
+
+            document.getElementById('statInPark').innerText = vehicles.filter(v => v.status === 'Sẵn sàng').length;
+            document.getElementById('statOperating').innerText = activeLogs.length;
+            document.getElementById('statMaintenance').innerText = vehicles.filter(v => v.status !== 'Sẵn sàng' && v.status !== 'Đang đi').length;
+
+            if (activeLogs.length === 0) {
+                document.getElementById('emptyMission').style.display = 'block';
+            } else {
+                document.getElementById('emptyMission').style.display = 'none';
+                activeLogs.forEach(l => {
+                    let veh = vehicles.find(v => v.plate === l.plate) || { type: 'N/A' };
+                    let row = `<tr>
+                        <td data-label="Biển số"><strong>${l.plate}</strong></td>
+                        <td data-label="Loại xe">${veh.type}</td>
+                        <td data-label="Nhiệm vụ">${l.task}</td>
+                        <td data-label="Giờ Đi">${l.timeOut}</td>
+                        <td data-label="Người Lái">${l.driver}</td>
+                        <td data-label="Hành động" style="text-align:center;">
+                             <button class="btn btn-primary btn-icon" onclick="prepareLogModal('IN', '${l.id}')">Báo Về</button>
+                        </td>
+                    </tr>`;
+                    tbody.innerHTML += row;
+                });
+            }
+        }
+
+        function renderDailyStats(dateStr) {
+            const tbody = document.getElementById('tblDailyStats');
+            tbody.innerHTML = '';
+            let dailyLogs = logs.filter(l => l.date === dateStr && l.timeIn);
+
+            let totalDist = 0;
+            let totalTripCount = dailyLogs.length;
+            let vehStats = {};
+
+            dailyLogs.forEach(l => {
+                if (!vehStats[l.plate]) vehStats[l.plate] = { trips: 0, dist: 0 };
+                vehStats[l.plate].trips++;
+                let d = (parseFloat(l.odoIn) - parseFloat(l.odoOut));
+                if (!isNaN(d) && d > 0) vehStats[l.plate].dist += d;
+                totalDist += d;
+            });
+
+            document.getElementById('totalTrips').innerText = totalTripCount;
+            document.getElementById('grandTotalDistance').innerText = totalDist.toFixed(1) + " Km";
+
+            for (let plate in vehStats) {
+                let veh = vehicles.find(v => v.plate === plate) || { type: '?', unit: '?' };
+                let row = `<tr>
+                    <td data-label="Biển Số"><strong>${plate}</strong></td>
+                    <td data-label="Loại Xe">${veh.type}</td>
+                    <td data-label="Đơn Vị">${veh.unit}</td>
+                    <td data-label="Số Chuyến">${vehStats[plate].trips}</td>
+                    <td data-label="Tổng Km">${vehStats[plate].dist.toFixed(1)} Km</td>
+                </tr>`;
+                tbody.innerHTML += row;
+            }
+        }
+
+        // --- BUTTON ACTIONS ---
+        function saveVehicle() {
+            let plate = document.getElementById('inpVehPlate').value.toUpperCase().trim();
+            if (!plate) return alert("Vui lòng nhập biển số!");
+            if (vehicles.find(v => v.plate === plate)) return alert("Biển số này đã tồn tại!");
+
+            // Xử lý ảnh QR Code
+            let qrImageBase64 = "";
+            const fileInput = document.getElementById('inpVehQRImage');
+
+            const doSave = (qrData) => {
+                let newVeh = {
+                    plate: plate,
+                    type: document.getElementById('inpVehType').value,
+                    unit: document.getElementById('inpVehUnit').value,
+                    status: document.getElementById('inpVehStatus').value,
+                    qrImage: qrData // Lưu chuỗi Base64 của ảnh
+                };
+                vehicles.push(newVeh);
+                refreshAll();
+                closeModal('modalVehicle');
+                alert("Đã thêm xe mới thành công!");
+            };
+
+            if (fileInput.files && fileInput.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    doSave(e.target.result);
+                }
+                reader.readAsDataURL(fileInput.files[0]);
+            } else {
+                doSave(""); // Không có ảnh thì lưu rỗng
+            }
+        }
+
+        function deleteVehicle(plate) {
+            if (confirm("Bạn có chắc muốn xóa xe " + plate + " khỏi danh sách?")) {
+                vehicles = vehicles.filter(v => v.plate !== plate);
+                refreshAll();
+            }
+        }
+
+        function prepareLogModal(type, logId = null) {
+            document.getElementById('inpLogActionType').value = type;
+            openModal('modalLog');
+
+            if (type === 'OUT') {
+                document.getElementById('logModalTitle').innerText = "Ghi Nhận Xe Ra";
+                document.getElementById('groupSelectVehicle').classList.remove('hidden');
+                document.getElementById('groupDisplayPlate').classList.add('hidden');
+                document.getElementById('sectionOut').classList.remove('hidden');
+                document.getElementById('sectionIn').classList.add('hidden');
+                document.getElementById('cameraSection').classList.remove('hidden');
+
+                document.getElementById('inpLogPlate').value = "";
+                document.getElementById('inpLogDriver').value = "";
+                document.getElementById('inpLogTask').value = "";
+                document.getElementById('inpLogTimeOut').value = getTimeString();
+                document.getElementById('inpLogOdoOut').value = "";
+
+            } else {
+                document.getElementById('logModalTitle').innerText = "Ghi Nhận Xe Về";
+                document.getElementById('groupSelectVehicle').classList.add('hidden');
+                document.getElementById('groupDisplayPlate').classList.remove('hidden');
+                document.getElementById('sectionOut').classList.add('hidden');
+                document.getElementById('sectionIn').classList.remove('hidden');
+                document.getElementById('cameraSection').classList.add('hidden');
+
+                let log = logs.find(l => l.id === logId);
+                document.getElementById('inpLogId').value = logId;
+                document.getElementById('displayPlate').value = log.plate;
+                document.getElementById('inpLogDriver').value = log.driver;
+                document.getElementById('inpLogTask').value = log.task;
+                document.getElementById('inpLogTimeIn').value = getTimeString();
+                document.getElementById('inpLogOdoIn').value = "";
+            }
+        }
+
+        function saveLog() {
+            let type = document.getElementById('inpLogActionType').value;
+
+            if (type === 'OUT') {
+                let plate = document.getElementById('inpLogPlate').value;
+                if (!plate) return alert("Vui lòng chọn xe!");
+
+                let newLog = {
+                    id: generateId(),
+                    date: getTodayString(),
+                    plate: plate,
+                    driver: document.getElementById('inpLogDriver').value,
+                    task: document.getElementById('inpLogTask').value,
+                    timeOut: document.getElementById('inpLogTimeOut').value,
+                    odoOut: document.getElementById('inpLogOdoOut').value,
+                    timeIn: null, odoIn: null
+                };
+
+                let vIndex = vehicles.findIndex(v => v.plate === plate);
+                if (vIndex >= 0) vehicles[vIndex].status = "Đang đi";
+                logs.push(newLog);
+
+            } else {
+                let id = document.getElementById('inpLogId').value;
+                let logIndex = logs.findIndex(l => l.id === id);
+                if (logIndex >= 0) {
+                    logs[logIndex].timeIn = document.getElementById('inpLogTimeIn').value;
+                    logs[logIndex].odoIn = document.getElementById('inpLogOdoIn').value;
+                    let vIndex = vehicles.findIndex(v => v.plate === logs[logIndex].plate);
+                    if (vIndex >= 0) vehicles[vIndex].status = "Sẵn sàng";
+                }
+            }
+            refreshAll();
+            closeModal('modalLog');
+        }
+
+        function saveDutyName() {
+            dutyOfficer = document.getElementById('inpDutyName').value;
+            document.getElementById('dutyNameDisplay').innerText = dutyOfficer;
+            localStorage.setItem('duty_officer', dutyOfficer);
+            closeModal('modalDuty');
+        }
+
+        function resetAllData() {
+            if (confirm("CẢNH BÁO: Xóa tất cả dữ liệu?")) {
+                localStorage.clear();
+                location.reload();
+            }
+        }
+
+        function setLanguage(lang) { alert("Chức năng đang phát triển!"); }
+
+        function exitApp() {
+            if (confirm("Kết thúc phiên làm việc?")) {
+                window.close();
+                document.body.innerHTML = "<h1 style='text-align:center;margin-top:20%; color:#555'>Phiên làm việc đã kết thúc.</h1>";
+            }
+        }
+        // Bảo vệ trang — chưa đăng nhập thì đá về login
+        firebase.auth().onAuthStateChanged((user) => {
+            if (!user) {
+                window.location.href = "../Sign_Up/index.html";
+            }
+        });
+
+        // Đăng xuất
+        function logout() {
+            if (confirm("Bạn có chắc muốn đăng xuất?")) {
+                firebase.auth().signOut()
+                    .then(() => {
+                        alert("Đăng xuất thành công!");
+                        window.location.href = "../Sign_Up/index.html";
+                    })
+                    .catch((err) => {
+                        console.error("Lỗi đăng xuất:", err);
+                        alert("Đăng xuất thất bại: " + err.message);
+                    });
+            }
+        }
+
+        function openModal(modalId) { document.getElementById(modalId).style.display = "block"; }
+
+        function closeModal(modalId) {
+            if (modalId === 'modalLog') stopCamera();
+            document.getElementById(modalId).style.display = "none";
+        }
+
+        function showPage(pageId) {
+            document.getElementById('page-dashboard').classList.add('hidden');
+            document.getElementById('page-logbook').classList.add('hidden');
+            document.getElementById('page-stats').classList.add('hidden');
+            document.getElementById('page-vehicles').classList.add('hidden');
+            document.querySelectorAll('.menu-item').forEach(el => el.classList.remove('active'));
+
+            document.getElementById('page-' + pageId).classList.remove('hidden');
+            document.getElementById('link-' + pageId).classList.add('active');
+
+            const titles = {
+                dashboard: "Bảng Điều Khiển",
+                logbook: "Sổ Nhật Ký Ra/Vào",
+                stats: "Báo Cáo Thống Kê",
+                vehicles: "Quản Lý Hồ Sơ Xe"
+            };
+            document.getElementById('page-title').innerHTML = '<i class="fas fa-caret-right"></i> ' + titles[pageId];
+        }
+
+        window.onclick = function (event) {
+            if (event.target.classList.contains('modal')) {
+                if (event.target.id === 'modalLog') stopCamera();
+                event.target.style.display = "none";
+            }
+        }
+    </script>
+</body>
+
+</html>

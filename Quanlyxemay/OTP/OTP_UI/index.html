@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OTP-UI</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <section>
+    <div class="container">
+      <h1 class="title">Xác thực OTP</h1>
+
+      <form id="otp-form">
+        <div class="otp-box">
+          <input type="text" class="otp-input" maxlength="1" inputmode="numeric" pattern="[0-9]">
+          <input type="text" class="otp-input" maxlength="1" inputmode="numeric" pattern="[0-9]">
+          <input type="text" class="otp-input" maxlength="1" inputmode="numeric" pattern="[0-9]">
+          <input type="text" class="otp-input" maxlength="1" inputmode="numeric" pattern="[0-9]">
+          <input type="text" class="otp-input" maxlength="1" inputmode="numeric" pattern="[0-9]">
+          <input type="text" class="otp-input" maxlength="1" inputmode="numeric" pattern="[0-9]">
+        </div>
+      </form>
+
+      <button id="verify-btn" disabled>Xác nhận</button>
+
+      <p id="countdown">
+        Gửi lại mã sau <span id="timer">60</span>s
+      </p>
+
+      <button id="resend-btn" disabled>Gửi lại OTP</button>
+
+      <!-- recaptcha cho chức năng gửi lại OTP -->
+      <div id="recaptcha-container"></div>
+    </div>
+  </section>
+
+  <!-- FIX: Thêm firestore để otp.js có thể cập nhật verified -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="otp.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,32 @@
+{
+  "name": "so-ky-thuat-dien-tu",
+  "version": "1.0.0",
+  "description": "Ung dung quan ly xe offline",
+  "main": "Quanlyxemay/Sys_Manager/main.js",
+  "author": "Ban",
+  "license": "ISC",
+  "scripts": {
+    "start": "electron .",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder",
+    "build": "npx electron-builder --win"
+  },
+  "build": {
+    "appId": "com.ludoan279.quanlyxe",
+    "productName": "So Ky Thuat Dien Tu",
+    "directories": {
+      "output": "dist"
+    },
+    "win": {
+      "target": "nsis"
+    },
+    "files": [
+      "Quanlyxemay/**/*",
+      "!**/node_modules/**"
+    ]
+  },
+  "devDependencies": {
+    "electron": "^29.0.0",
+    "electron-builder": "^26.0.0"
+  }
+}

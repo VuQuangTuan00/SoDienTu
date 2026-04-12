@@ -1,0 +1,16 @@
+{
+  "hosting": {
+    "public": "Quanlyxemay",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "/",
+        "destination": "/Sign_Up/index.html"
+      }
+    ]
+  }
+}
